@@ -1,5 +1,6 @@
 
 import datetime
+from dataclasses import dataclass
 from typing import Iterator, Optional
 
 from cachelib.simple import SimpleCache
@@ -9,6 +10,9 @@ from ._interfaces import DatetimeProvider, SupportsRefresh
 from ._model import Credentials
 from ._token import KeycloakToken
 
+@dataclass
+class TokenProviderOptions:
+	token_expire_delta: datetime.timedelta = datetime.timedelta(seconds=20)
 
 class TokenProvider:
 
@@ -16,13 +20,14 @@ class TokenProvider:
 
 	def __init__(self, keycloak_client: KeycloakClient, datetime_provider: Optional[DatetimeProvider]=None):
 		self.keycloak = keycloak_client
-		self.now = datetime_provider or datetime.datetime.now
+		self.options = TokenProviderOptions()
+		self.now = lambda: (datetime_provider or datetime.datetime.now)() + self.options.token_expire_delta
 
 	def get_token(self, credentials: Credentials) -> Iterator[KeycloakToken]:
 
 		key = credentials.key()
 
-		token = self.token_cache.get(key)
+		token: Optional[KeycloakToken] = self.token_cache.get(key)
 
 		if token:
 			if not token.has_expired(self.now()):
