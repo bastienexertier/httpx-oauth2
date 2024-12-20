@@ -1,6 +1,6 @@
 
-from ._keycloak_client import (
-	KeycloakClient,
+from ._oauth_authority_client import (
+	OAuthAuthorityClient,
 	KeycloakError
 )
 from ._interfaces import (

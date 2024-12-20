@@ -1,6 +1,6 @@
 
 import datetime
-from typing import Union, Optional, Literal, Callable, Protocol, runtime_checkable
+from typing import Optional, Literal, Callable, Protocol, runtime_checkable
 
 
 from ._token import Scopes
@@ -25,7 +25,7 @@ AuthMethod = Literal[
 	"client_secret_jwt"
 ]
 
-AuthMethods = Union[AuthMethod, tuple[AuthMethod, ...]]
+AuthMethods = tuple[AuthMethod, ...]
 
 
 class KeycloakError(Exception):
@@ -74,3 +74,13 @@ class SupportsRefresh(Credentials, Protocol):
 
 	def refresh(self, refresh_token: str) -> Credentials:
 		...
+
+class CachedHash:
+
+	def __init__(self) -> None:
+		self._hash: Optional[int] = None
+
+	def __hash__(self) -> int:
+		if not self._hash:
+			self._hash = super().__hash__()
+		return self._hash

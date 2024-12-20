@@ -6,7 +6,7 @@ from typing import Callable, Optional
 import httpx
 
 from ._interfaces import Credentials, SupportsExhange, KeycloakError, DatetimeProvider
-from ._keycloak_client import KeycloakClient
+from ._oauth_authority_client import OAuthAuthorityClient
 from ._model import ClientCredentials, ResourceOwnerCredentials, ResourceOwnerCredentialsWithUser
 from ._token import KeycloakToken
 from ._token_provider import TokenProvider
@@ -45,7 +45,7 @@ class AuthenticatingTransport(httpx.BaseTransport):
 
 class AuthenticatingTransportFactory:
 
-	def __init__(self, keycloak_client: KeycloakClient, datetime_provider: Optional[DatetimeProvider]=None):
+	def __init__(self, keycloak_client: OAuthAuthorityClient, datetime_provider: Optional[DatetimeProvider]=None):
 		self.keycloak = keycloak_client
 		self.now = datetime_provider or datetime.datetime.now
 

@@ -1,3 +1,10 @@
-# Specify filepatterns you want git to ignore.
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
 
-*__pycache__*
+# Virtual environments
+.venv

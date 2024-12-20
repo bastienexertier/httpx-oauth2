@@ -14,8 +14,8 @@ The library only needs to be setup. Once it is done, the authentication will hap
 
 ```python
 import httpx
-from httpx_keycloak import (
-	KeycloakClient,
+from httpx_oauth2 import (
+	OAuthAuthorityClient,
 	TokenProviderFactory,
 	ClientAuthenticationTransport,
 	ClientCredentials,
@@ -32,7 +32,7 @@ api_client = httpx.Client(base_url='http://example')
 # ============== ADD THIS ==============
 
 token_providers = TokenProviderFactory(
-	KeycloakClient(httpx.Client(base_url='http://localhost:8080/realms/master'))
+	OAuthAuthorityClient(httpx.Client(base_url='http://localhost:8080/realms/master'))
 )
 
 credentials = ClientCredentials(CLIENT_ID, CLIENT_SECRET, ('scope-1', 'scope-2'))
@@ -57,7 +57,7 @@ api_client = httpx.Client(base_url='http://example')
 # ============== ADD THIS ==============
 
 token_providers = TokenProviderFactory(
-	KeycloakClient(httpx.Client(base_url='http://localhost:8080/realms/master'))
+	OAuthAuthorityClient(httpx.Client(base_url='http://localhost:8080/realms/master'))
 )
 
 credentials = ResourceOwnerCredentials(USERNAME, PASSWORD, CLIENT_ID, ('scope-1', 'scope-2')) # <<<
@@ -82,7 +82,7 @@ api_client = httpx.Client(base_url='http://example')
 # ============== ADD THIS ==============
 
 token_providers = TokenProviderFactory(
-	KeycloakClient(httpx.Client(base_url='http://localhost:8080/realms/master'))
+	OAuthAuthorityClient(httpx.Client(base_url='http://localhost:8080/realms/master'))
 )
 
 credentials = ClientCredentials(CLIENT_ID, CLIENT_SECRET, ('scope-1', 'scope-2'))

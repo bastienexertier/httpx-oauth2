@@ -5,7 +5,7 @@ from typing import Iterator, Optional
 
 from cachelib.simple import SimpleCache
 
-from ._keycloak_client import KeycloakClient
+from ._oauth_authority_client import OAuthAuthorityClient
 from ._interfaces import DatetimeProvider, SupportsRefresh
 from ._model import Credentials
 from ._token import KeycloakToken
@@ -18,7 +18,7 @@ class TokenProvider:
 
 	token_cache = SimpleCache(threshold=100)
 
-	def __init__(self, keycloak_client: KeycloakClient, datetime_provider: Optional[DatetimeProvider]=None):
+	def __init__(self, keycloak_client: OAuthAuthorityClient, datetime_provider: Optional[DatetimeProvider]=None):
 		self.keycloak = keycloak_client
 		self.options = TokenProviderOptions()
 		self.now = lambda: (datetime_provider or datetime.datetime.now)() + self.options.token_expire_delta

@@ -1,20 +1,26 @@
 
 from typing import Optional
-from dataclasses import dataclass
 
 from ._interfaces import Credentials, GrantType, AuthMethods
 from ._token import Scopes
 
 DefaultAuthMethods: AuthMethods =  ('client_secret_basic', 'client_secret_post')
 
-@dataclass
+
 class ClientCredentials:
 
-	client_id: str
-	client_secret: str
-	scopes: Scopes = Scopes()
-
-	auth_methods: AuthMethods = DefaultAuthMethods
+	def __init__(
+		self,
+		client_id: str,
+		client_secret: str,
+		scopes: Scopes = Scopes(),
+		auth_methods: AuthMethods = DefaultAuthMethods,
+	) -> None:
+		self.client_id = client_id
+		self.client_secret = client_secret
+		self.scopes = scopes
+		self.auth_methods = auth_methods
+		self._hash = self.key().__hash__()
 
 	@property
 	def grant_type(self) -> GrantType:
@@ -44,14 +50,20 @@ class ClientCredentials:
 			auth_methods=self.auth_methods,
 		)
 
-@dataclass
+
 class ResourceOwnerCredentials:
 
-	client_id: str
-	client_secret: Optional[str] = None
-	scopes: Scopes = Scopes()
-
-	auth_methods: AuthMethods = DefaultAuthMethods
+	def __init__(
+		self,
+		client_id: str,
+		client_secret: Optional[str] = None,
+		scopes: Scopes = Scopes(),
+		auth_methods: AuthMethods = DefaultAuthMethods,
+	) -> None:
+		self.client_id = client_id
+		self.client_secret = client_secret
+		self.scopes = scopes
+		self.auth_methods = auth_methods
 
 	def with_username_password(self, username: str, password: str):
 		return ResourceOwnerCredentialsWithUser(
@@ -60,20 +72,29 @@ class ResourceOwnerCredentials:
 			client_id=self.client_id,
 			client_secret=self.client_secret,
 			scopes=self.scopes,
-			auth_methods=self.auth_methods,
+			auth_methods=self.auth_methods
 		)
 
-@dataclass
+
 class ResourceOwnerCredentialsWithUser:
 
-	username: str
-	password: str
+	def __init__(
+		self,
+		username: str,
+		password: str,
+		client_id: str,
+		client_secret: Optional[str] = None,
+		scopes: Scopes = Scopes(),
+		auth_methods: AuthMethods = DefaultAuthMethods,
+	) -> None:
+		self.username = username
+		self.password = password
+		self.client_id = client_id
+		self.client_secret = client_secret
+		self.scopes = scopes
+		self.auth_methods = auth_methods
+		self._hash = self.key().__hash__()
 
-	client_id: str
-	client_secret: Optional[str] = None
-	scopes: Scopes = Scopes()
-
-	auth_methods: AuthMethods = DefaultAuthMethods
 
 	@property
 	def grant_type(self) -> GrantType:
@@ -100,16 +121,22 @@ class ResourceOwnerCredentialsWithUser:
 		)
 
 
-@dataclass
 class TokenExchangeCredentials:
 
-	subject_token: str
-
-	client_id: str
-	client_secret: str
-	scopes: Scopes = Scopes()
-
-	auth_methods: AuthMethods = DefaultAuthMethods
+	def __init__(
+		self,
+		subject_token: str,
+		client_id: str,
+		client_secret: Optional[str] = None,
+		scopes: Scopes = Scopes(),
+		auth_methods: AuthMethods = DefaultAuthMethods,
+	) -> None:
+		self.subject_token = subject_token
+		self.client_id = client_id
+		self.client_secret = client_secret
+		self.scopes = scopes
+		self.auth_methods = auth_methods
+		self._hash = self.key().__hash__()
 
 	@property
 	def grant_type(self) -> GrantType:
@@ -133,16 +160,23 @@ class TokenExchangeCredentials:
 			auth_methods=self.auth_methods,
 		)
 
-@dataclass
+
 class ClientCredentialsRefreshCredentials:
 
-	refresh_token: str
-
-	client_id: str
-	client_secret: str
-	scopes: Scopes = Scopes()
-
-	auth_methods: AuthMethods = DefaultAuthMethods
+	def __init__(
+		self,
+		refresh_token: str,
+		client_id: str,
+		client_secret: Optional[str] = None,
+		scopes: Scopes = Scopes(),
+		auth_methods: AuthMethods = DefaultAuthMethods,
+	) -> None:
+		self.refresh_token = refresh_token
+		self.client_id = client_id
+		self.client_secret = client_secret
+		self.scopes = scopes
+		self.auth_methods = auth_methods
+		self._hash = self.key().__hash__()
 
 	@property
 	def grant_type(self) -> GrantType:
@@ -156,19 +190,27 @@ class ClientCredentialsRefreshCredentials:
 	def key(self) -> str:
 		return f'{self.client_id}:{self.scopes}'
 
-@dataclass
+
 class ResourceOwnerCredentialsRefreshCredentials:
 
-	refresh_token: str
-
-	username: str
-	password: str
-
-	client_id: str
-	client_secret: Optional[str] = None
-	scopes: Scopes = Scopes()
-
-	auth_methods: AuthMethods = DefaultAuthMethods
+	def __init__(
+		self,
+		refresh_token: str,
+		username: str,
+		password: str,
+		client_id: str,
+		client_secret: Optional[str] = None,
+		scopes: Scopes = Scopes(),
+		auth_methods: AuthMethods = DefaultAuthMethods,
+	) -> None:
+		self.refresh_token = refresh_token
+		self.username = username
+		self.password = password
+		self.client_id = client_id
+		self.client_secret = client_secret
+		self.scopes = scopes
+		self.auth_methods = auth_methods
+		self._hash = self.key().__hash__()
 
 	@property
 	def grant_type(self) -> GrantType:

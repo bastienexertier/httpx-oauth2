@@ -20,7 +20,8 @@ Body = dict[str, str]
 AuthAndBody = tuple[Optional[Auth], Body]
 RequestBuilder = Callable[[Credentials, Body], AuthAndBody]
 
-class KeycloakClient:
+
+class OAuthAuthorityClient:
 
 	def __init__(self, http: httpx.Client, openid_config: Optional[OpenIDConfiguration]=None, datetime_provider: Optional[DatetimeProvider]=None):
 		self.http = http
@@ -90,7 +91,7 @@ class KeycloakClient:
 
 
 	def load_openid_config(self) -> OpenIDConfiguration:
-		response = self.http.get('/.well-known/openid-configuration/')
+		response = self.http.get('/.well-known/openid-configuration')
 
 		if response.status_code == 404:
 			raise KeycloakError(f'OpenID configuration not found at {response.url}')
