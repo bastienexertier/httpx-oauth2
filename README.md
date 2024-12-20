@@ -1,4 +1,4 @@
-# HTTPX-Keycloak
+# HTTPX-OAuth2
 
 My implementation of an `httpx.BaseTransport` that negotiates an access token and puts it in the request headers before sending it.
 
