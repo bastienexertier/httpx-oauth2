@@ -1,4 +1,3 @@
-
 import datetime
 from typing import Optional, Literal, Callable, Protocol, runtime_checkable
 
@@ -14,7 +13,7 @@ GrantType = Literal[
 	"client_credentials",
 	"urn:openid:params:grant-type:ciba",
 	"urn:ietf:params:oauth:grant-type:token-exchange",
-	"urn:ietf:params:oauth:grant-type:device_code"
+	"urn:ietf:params:oauth:grant-type:device_code",
 ]
 
 AuthMethod = Literal[
@@ -22,7 +21,7 @@ AuthMethod = Literal[
 	"client_secret_basic",
 	"client_secret_post",
 	"tls_client_auth",
-	"client_secret_jwt"
+	"client_secret_jwt",
 ]
 
 AuthMethods = tuple[AuthMethod, ...]
@@ -33,7 +32,6 @@ class KeycloakError(Exception):
 
 
 DatetimeProvider = Callable[[], datetime.datetime]
-
 
 
 class Credentials(Protocol):
@@ -65,18 +63,17 @@ class Credentials(Protocol):
 
 @runtime_checkable
 class SupportsExhange(Credentials, Protocol):
-
 	def exchange(self, subject_token: str) -> Credentials:
 		...
 
+
 @runtime_checkable
 class SupportsRefresh(Credentials, Protocol):
-
 	def refresh(self, refresh_token: str) -> Credentials:
 		...
 
-class CachedHash:
 
+class CachedHash:
 	def __init__(self) -> None:
 		self._hash: Optional[int] = None
 

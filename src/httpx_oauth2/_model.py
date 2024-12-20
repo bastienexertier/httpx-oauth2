@@ -1,14 +1,12 @@
-
 from typing import Optional
 
 from ._interfaces import Credentials, GrantType, AuthMethods
 from ._token import Scopes
 
-DefaultAuthMethods: AuthMethods =  ('client_secret_basic', 'client_secret_post')
+DefaultAuthMethods: AuthMethods = ("client_secret_basic", "client_secret_post")
 
 
 class ClientCredentials:
-
 	def __init__(
 		self,
 		client_id: str,
@@ -30,7 +28,7 @@ class ClientCredentials:
 		return {}
 
 	def key(self) -> str:
-		return f'{self.client_id}:{self.scopes}'
+		return f"{self.client_id}:{self.scopes}"
 
 	def exchange(self, subject_token: str) -> Credentials:
 		return TokenExchangeCredentials(
@@ -52,7 +50,6 @@ class ClientCredentials:
 
 
 class ResourceOwnerCredentials:
-
 	def __init__(
 		self,
 		client_id: str,
@@ -72,12 +69,11 @@ class ResourceOwnerCredentials:
 			client_id=self.client_id,
 			client_secret=self.client_secret,
 			scopes=self.scopes,
-			auth_methods=self.auth_methods
+			auth_methods=self.auth_methods,
 		)
 
 
 class ResourceOwnerCredentialsWithUser:
-
 	def __init__(
 		self,
 		username: str,
@@ -95,7 +91,6 @@ class ResourceOwnerCredentialsWithUser:
 		self.auth_methods = auth_methods
 		self._hash = self.key().__hash__()
 
-
 	@property
 	def grant_type(self) -> GrantType:
 		return "password"
@@ -107,7 +102,7 @@ class ResourceOwnerCredentialsWithUser:
 		}
 
 	def key(self) -> str:
-		return f'{self.client_id}:{self.username}:{self.scopes}'
+		return f"{self.client_id}:{self.username}:{self.scopes}"
 
 	def refresh(self, refresh_token: str) -> Credentials:
 		return ResourceOwnerCredentialsRefreshCredentials(
@@ -122,7 +117,6 @@ class ResourceOwnerCredentialsWithUser:
 
 
 class TokenExchangeCredentials:
-
 	def __init__(
 		self,
 		subject_token: str,
@@ -149,7 +143,7 @@ class TokenExchangeCredentials:
 		}
 
 	def key(self) -> str:
-		return f'{self.client_id}:{self.subject_token}:{self.scopes}'
+		return f"{self.client_id}:{self.subject_token}:{self.scopes}"
 
 	def refresh(self, refresh_token: str) -> Credentials:
 		return ClientCredentialsRefreshCredentials(
@@ -162,7 +156,6 @@ class TokenExchangeCredentials:
 
 
 class ClientCredentialsRefreshCredentials:
-
 	def __init__(
 		self,
 		refresh_token: str,
@@ -183,16 +176,13 @@ class ClientCredentialsRefreshCredentials:
 		return "refresh_token"
 
 	def to_request_body(self) -> dict[str, str]:
-		return {
-			"refresh_token": self.refresh_token
-		}
+		return {"refresh_token": self.refresh_token}
 
 	def key(self) -> str:
-		return f'{self.client_id}:{self.scopes}'
+		return f"{self.client_id}:{self.scopes}"
 
 
 class ResourceOwnerCredentialsRefreshCredentials:
-
 	def __init__(
 		self,
 		refresh_token: str,
@@ -217,9 +207,7 @@ class ResourceOwnerCredentialsRefreshCredentials:
 		return "refresh_token"
 
 	def to_request_body(self) -> dict[str, str]:
-		return {
-			"refresh_token": self.refresh_token
-		}
+		return {"refresh_token": self.refresh_token}
 
 	def key(self) -> str:
-		return f'{self.client_id}:{self.username}:{self.scopes}'
+		return f"{self.client_id}:{self.username}:{self.scopes}"
