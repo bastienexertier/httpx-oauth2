@@ -82,10 +82,10 @@ class ResourceOwnerCredentials:
 class ResourceOwnerCredentialsWithUser:
 	def __init__(
 		self,
+		client_id: str,
+		client_secret: Optional[str],
 		username: str,
 		password: str,
-		client_id: str,
-		client_secret: Optional[str] = None,
 		scopes: Scopes = Scopes(),
 		auth_methods: AuthMethods = DefaultAuthMethods,
 	) -> None:
@@ -128,9 +128,9 @@ class ResourceOwnerCredentialsWithUser:
 class TokenExchangeCredentials:
 	def __init__(
 		self,
-		subject_token: str,
 		client_id: str,
-		client_secret: Optional[str] = None,
+		client_secret: Optional[str],
+		subject_token: str,
 		scopes: Scopes = Scopes(),
 		auth_methods: AuthMethods = DefaultAuthMethods,
 	) -> None:
@@ -170,9 +170,9 @@ class TokenExchangeCredentials:
 class ClientCredentialsRefreshCredentials:
 	def __init__(
 		self,
-		refresh_token: str,
 		client_id: str,
-		client_secret: Optional[str] = None,
+		client_secret: Optional[str]	,
+		refresh_token: str,
 		scopes: Scopes = Scopes(),
 		auth_methods: AuthMethods = DefaultAuthMethods,
 	) -> None:
@@ -200,11 +200,11 @@ class ClientCredentialsRefreshCredentials:
 class ResourceOwnerCredentialsRefreshCredentials:
 	def __init__(
 		self,
-		refresh_token: str,
+		client_id: str,
+		client_secret: Optional[str],
 		username: str,
 		password: str,
-		client_id: str,
-		client_secret: Optional[str] = None,
+		refresh_token: str,
 		scopes: Scopes = Scopes(),
 		auth_methods: AuthMethods = DefaultAuthMethods,
 	) -> None:

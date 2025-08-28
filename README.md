@@ -4,7 +4,7 @@ My implementation of an `httpx.BaseTransport` that negotiates an access token an
 
 # Installation
 
-You can't install it yet :(
+`pip install httpx-oauth2`
 
 # Usage
 
@@ -16,10 +16,9 @@ The library only needs to be setup. Once it is done, the authentication will hap
 import httpx
 from httpx_oauth2 import (
 	OAuthAuthorityClient,
-	TokenProviderFactory,
-	ClientAuthenticationTransport,
 	ClientCredentials,
-	ResourceOwnerCredentials
+	ResourceOwnerCredentials,
+	AuthenticatingTransportFactory
 )
 ```
 
@@ -31,16 +30,15 @@ api_client = httpx.Client(base_url='http://example')
 
 # ============== ADD THIS ==============
 
-token_providers = TokenProviderFactory(
-	OAuthAuthorityClient(httpx.Client(base_url='http://localhost:8080/realms/master'))
+oauth_authority = OAuthAuthorityClient(
+	httpx.Client(base_url='http://localhost:8080/realms/master'),
 )
 
-credentials = ClientCredentials(CLIENT_ID, CLIENT_SECRET, ('scope-1', 'scope-2'))
+transports = AuthenticatingTransportFactory(oauth_authority)
 
-api_client._transport = ClientAuthenticationTransport(
-	api_client._transport,
-	token_providers.client_credentials(credentials)
-)
+credentials = ClientCredentials('client-1', 'my-secret', ('scope-1',))
+
+api_client._transport = transports.client_credentials_transport(api_client._transport, credentials)
 
 # ===== JUST THIS. NOW USE A USUAL =====
 
@@ -48,7 +46,7 @@ api_client.get('/users')
 
 ```
 
-## Resource Owner
+## Resource Owner (Client Credentials with a technical account)
 
 ```python
 
@@ -56,16 +54,15 @@ api_client = httpx.Client(base_url='http://example')
 
 # ============== ADD THIS ==============
 
-token_providers = TokenProviderFactory(
-	OAuthAuthorityClient(httpx.Client(base_url='http://localhost:8080/realms/master'))
+oauth_authority = OAuthAuthorityClient(
+	httpx.Client(base_url='http://localhost:8080/realms/master'),
 )
 
-credentials = ResourceOwnerCredentials(USERNAME, PASSWORD, CLIENT_ID, ('scope-1', 'scope-2')) # <<<
+transports = AuthenticatingTransportFactory(oauth_authority)
 
-api_client._transport = ClientAuthenticationTransport(
-	api_client._transport,
-	token_providers.resource_owner(credentials) # <<<
-)
+credentials = ResourceOwnerCredentials('client-3', 'my-secret').with_username_password('user', 'pwd')
+
+api_client._transport = transports.technical_account_transport(api_client._transport, credentials)
 
 # ===== JUST THIS. NOW USE A USUAL =====
 
@@ -81,16 +78,15 @@ api_client = httpx.Client(base_url='http://example')
 
 # ============== ADD THIS ==============
 
-token_providers = TokenProviderFactory(
-	OAuthAuthorityClient(httpx.Client(base_url='http://localhost:8080/realms/master'))
+oauth_authority = OAuthAuthorityClient(
+	httpx.Client(base_url='http://localhost:8080/realms/master'),
 )
 
-credentials = ClientCredentials(CLIENT_ID, CLIENT_SECRET, ('scope-1', 'scope-2'))
+transports = AuthenticatingTransportFactory(oauth_authority)
 
-api_client._transport = TokenExchangeAuthenticationTransport( # <<<
-	api_client._transport,
-	token_providers.token_exchange(credentials) # <<<
-)
+credentials = ClientCredentials('client-1', 'my-secret', ('scope-1',))
+
+api_client._transport = transports.token_exchange_transport(api_client._transport, credentials)
 
 # ===== JUST THIS. NOW USE A USUAL =====
 
@@ -100,11 +96,24 @@ api_client.get('/users', headers={'Authorization': 'token_to_be_exchanged'})
 
 ```
 
+## Getting an access token
+
+```python
+
+oauth_authority = OAuthAuthorityClient(
+	httpx.Client(base_url='http://localhost:8080/realms/master'),
+)
+
+credentials = ClientCredentials('client-1', 'my-secret', ('scope-1',))
+
+token = oauth_authority.get_token(credentials)
+```
+
 ## Cache and Automatic retry
 
 Access token are cached. Exchanged tokens too.  
 
-If the AuthenticationTransport see that the response is 401 (meaning the token wasn't valid anymore), it will:
+If the `AuthenticatingTransport` see that the response is 401 (meaning the token wasn't valid anymore), it will:
 - Try to refresh the token with the refresh_token if supported.
 - Request a new token.
 - Re-send the request.
