@@ -27,7 +27,7 @@ AuthMethod = Literal[
 AuthMethods = tuple[AuthMethod, ...]
 
 
-class KeycloakError(Exception):
+class OAuthAuthorityError(Exception):
 	...
 
 
@@ -61,7 +61,6 @@ class Credentials(Protocol):
 		...
 
 
-@runtime_checkable
 class SupportsExhange(Credentials, Protocol):
 	def exchange(self, subject_token: str) -> Credentials:
 		...
@@ -71,13 +70,3 @@ class SupportsExhange(Credentials, Protocol):
 class SupportsRefresh(Credentials, Protocol):
 	def refresh(self, refresh_token: str) -> Credentials:
 		...
-
-
-class CachedHash:
-	def __init__(self) -> None:
-		self._hash: Optional[int] = None
-
-	def __hash__(self) -> int:
-		if not self._hash:
-			self._hash = super().__hash__()
-		return self._hash

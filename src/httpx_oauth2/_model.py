@@ -20,6 +20,9 @@ class ClientCredentials:
 		self.auth_methods = auth_methods
 		self._hash = self.key().__hash__()
 
+	def __str__(self) -> str:
+		return f'ClientCredentials(client_id={self.client_id}, scopes={self.scopes})'
+
 	@property
 	def grant_type(self) -> GrantType:
 		return "client_credentials"
@@ -62,6 +65,9 @@ class ResourceOwnerCredentials:
 		self.scopes = scopes
 		self.auth_methods = auth_methods
 
+	def __str__(self) -> str:
+		return f'ResourceOwnerCredentials(client_id={self.client_id}, scopes={self.scopes})'
+
 	def with_username_password(self, username: str, password: str):
 		return ResourceOwnerCredentialsWithUser(
 			username=username,
@@ -90,6 +96,9 @@ class ResourceOwnerCredentialsWithUser:
 		self.scopes = scopes
 		self.auth_methods = auth_methods
 		self._hash = self.key().__hash__()
+
+	def __str__(self) -> str:
+		return f'ResourceOwnerCredentialsWithUser(client_id={self.client_id}, scopes={self.scopes})'
 
 	@property
 	def grant_type(self) -> GrantType:
@@ -132,6 +141,9 @@ class TokenExchangeCredentials:
 		self.auth_methods = auth_methods
 		self._hash = self.key().__hash__()
 
+	def __str__(self) -> str:
+		return f'TokenExchangeCredentials(client_id={self.client_id}, scopes={self.scopes})'
+
 	@property
 	def grant_type(self) -> GrantType:
 		return "urn:ietf:params:oauth:grant-type:token-exchange"
@@ -171,6 +183,9 @@ class ClientCredentialsRefreshCredentials:
 		self.auth_methods = auth_methods
 		self._hash = self.key().__hash__()
 
+	def __str__(self) -> str:
+		return f'ClientCredentialsRefreshCredentials(client_id={self.client_id}, scopes={self.scopes})'
+
 	@property
 	def grant_type(self) -> GrantType:
 		return "refresh_token"
@@ -201,6 +216,9 @@ class ResourceOwnerCredentialsRefreshCredentials:
 		self.scopes = scopes
 		self.auth_methods = auth_methods
 		self._hash = self.key().__hash__()
+
+	def __str__(self) -> str:
+		return f'ResourceOwnerCredentialsRefreshCredentials(client_id={self.client_id}, scopes={self.scopes})'
 
 	@property
 	def grant_type(self) -> GrantType:

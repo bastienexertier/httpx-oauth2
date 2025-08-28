@@ -3,8 +3,8 @@ from typing import TypedDict, Optional, Callable
 
 import httpx
 
-from ._interfaces import AuthMethod, DatetimeProvider, KeycloakError, Credentials
-from ._token import KeycloakToken
+from ._interfaces import AuthMethod, DatetimeProvider, OAuthAuthorityError, Credentials
+from ._token import OAuthToken
 from ._model import GrantType
 
 
@@ -40,7 +40,7 @@ class OAuthAuthorityClient:
 	def supports_grant(self, grant: GrantType) -> bool:
 		return grant in self.openid_config["grant_types_supported"]
 
-	def get_token(self, token_request: Credentials) -> KeycloakToken:
+	def get_token(self, token_request: Credentials) -> OAuthToken:
 		"""
 		Requests a new token from a Credentials.
 		A Credentials is an object that can provide a Authentication header and request body.
@@ -67,7 +67,7 @@ class OAuthAuthorityClient:
 		)
 
 		if auth_method is None:
-			raise KeycloakError(
+			raise OAuthAuthorityError(
 				f'None of the requested auth method is supported: {", ".join(auth_methods)} '
 				f'Supported methods are {", ".join(auth_methods_supported)}'
 			)
@@ -90,17 +90,17 @@ class OAuthAuthorityClient:
 		data = response.json()
 
 		if response.is_error:
-			raise KeycloakError(
+			raise OAuthAuthorityError(
 				f"[{response.status_code}] {data['error']} - {data['error_description']}"
 			)
 
-		return KeycloakToken.from_dict(data, emitted_at=self.now() - response.elapsed)
+		return OAuthToken.from_dict(data, emitted_at=self.now() - response.elapsed)
 
 	def load_openid_config(self) -> OpenIDConfiguration:
 		response = self.http.get("/.well-known/openid-configuration")
 
 		if response.status_code == 404:
-			raise KeycloakError(f"OpenID configuration not found at {response.url}")
+			raise OAuthAuthorityError(f"OpenID configuration not found at {response.url}")
 
 		return response.json()
 

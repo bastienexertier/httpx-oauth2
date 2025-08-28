@@ -1,4 +1,4 @@
-from ._oauth_authority_client import OAuthAuthorityClient, KeycloakError
+from ._oauth_authority_client import OAuthAuthorityClient, OAuthAuthorityError
 from ._interfaces import (
 	DatetimeProvider,
 )
@@ -8,4 +8,4 @@ from ._model import (
 	ResourceOwnerCredentials,
 	Scopes,
 )
-from ._token import KeycloakToken
+from ._token import OAuthToken

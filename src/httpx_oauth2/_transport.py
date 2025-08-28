@@ -4,14 +4,14 @@ from typing import Callable, Optional
 
 import httpx
 
-from ._interfaces import Credentials, SupportsExhange, KeycloakError, DatetimeProvider
+from ._interfaces import Credentials, SupportsExhange, OAuthAuthorityError, DatetimeProvider
 from ._oauth_authority_client import OAuthAuthorityClient
 from ._model import (
 	ClientCredentials,
 	ResourceOwnerCredentials,
 	ResourceOwnerCredentialsWithUser,
 )
-from ._token import KeycloakToken
+from ._token import OAuthToken
 from ._token_provider import TokenProvider
 
 
@@ -48,10 +48,10 @@ class AuthenticatingTransport(httpx.BaseTransport):
 class AuthenticatingTransportFactory:
 	def __init__(
 		self,
-		keycloak_client: OAuthAuthorityClient,
+		authority: OAuthAuthorityClient,
 		datetime_provider: Optional[DatetimeProvider] = None,
 	):
-		self.keycloak = keycloak_client
+		self.authority = authority
 		self.now = datetime_provider or datetime.datetime.now
 
 	def client_credentials_transport(
@@ -61,7 +61,7 @@ class AuthenticatingTransportFactory:
 		return AuthenticatingTransport(
 			transport,
 			lambda req: build_credentials(req, credentials),
-			TokenProvider(self.keycloak, self.now),
+			TokenProvider(self.authority, self.now),
 		)
 
 	def technical_account_transport(
@@ -73,7 +73,7 @@ class AuthenticatingTransportFactory:
 		return AuthenticatingTransport(
 			transport,
 			lambda req: build_credentials(req, credentials),
-			TokenProvider(self.keycloak, self.now),
+			TokenProvider(self.authority, self.now),
 		)
 
 	def resource_owner_transport(
@@ -83,7 +83,7 @@ class AuthenticatingTransportFactory:
 		return AuthenticatingTransport(
 			transport,
 			lambda req: add_username_password(req, credentials),
-			TokenProvider(self.keycloak, self.now),
+			TokenProvider(self.authority, self.now),
 		)
 
 	def token_exchange_transport(
@@ -93,11 +93,11 @@ class AuthenticatingTransportFactory:
 		return AuthenticatingTransport(
 			transport,
 			lambda req: build_exchange_credentials(req, credentials),
-			TokenProvider(self.keycloak, self.now),
+			TokenProvider(self.authority, self.now),
 		)
 
 
-def set_auth_header(request: httpx.Request, token: KeycloakToken):
+def set_auth_header(request: httpx.Request, token: OAuthToken):
 	request.headers["Authorization"] = token.to_bearer_string()
 
 
@@ -127,6 +127,6 @@ def build_exchange_credentials(
 	auth_header: str = request.headers.get("Authorization")
 
 	if not auth_header:
-		raise KeycloakError("Token to be exchanged not found in Authorization header")
+		raise OAuthAuthorityError("Token to be exchanged not found in Authorization header")
 
 	return credentials.exchange(auth_header.removeprefix("Bearer "))

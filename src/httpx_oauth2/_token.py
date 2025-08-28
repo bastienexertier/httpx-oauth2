@@ -6,7 +6,7 @@ Scopes = tuple[str, ...]
 
 
 @dataclass(frozen=True)
-class KeycloakToken:
+class OAuthToken:
 
 	token_type: str
 	emitted_at: datetime.datetime
