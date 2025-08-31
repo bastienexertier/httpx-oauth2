@@ -6,7 +6,7 @@ from cachelib.simple import SimpleCache
 
 from ._oauth_authority_client import OAuthAuthorityClient
 from ._interfaces import DatetimeProvider, SupportsRefresh
-from ._model import Credentials
+from ._model import Credentials, TokenExchangeCredentials
 from ._token import OAuthToken
 
 
@@ -23,9 +23,10 @@ class TokenProvider:
 		self,
 		authority: OAuthAuthorityClient,
 		datetime_provider: Optional[DatetimeProvider] = None,
+		options: Optional[TokenProviderOptions] = None,
 	):
 		self.authority = authority
-		self.options = TokenProviderOptions()
+		self.options = options or TokenProviderOptions()
 		self.now = (
 			lambda: (datetime_provider or datetime.datetime.now)()
 			+ self.options.token_expire_delta

@@ -1,9 +1,8 @@
+
 import datetime
 from typing import Optional, Literal, Callable, Protocol, runtime_checkable
 
-
 from ._token import Scopes
-
 
 GrantType = Literal[
 	"authorization_code",
@@ -32,6 +31,7 @@ class OAuthAuthorityError(Exception):
 
 
 DatetimeProvider = Callable[[], datetime.datetime]
+SubjectTokenProvider = Callable[[], Optional[str]]
 
 
 class Credentials(Protocol):
@@ -61,7 +61,7 @@ class Credentials(Protocol):
 		...
 
 
-class SupportsExhange(Credentials, Protocol):
+class SupportsExchange(Credentials, Protocol):
 	def exchange(self, subject_token: str) -> Credentials:
 		...
 

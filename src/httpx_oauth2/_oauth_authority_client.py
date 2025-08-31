@@ -68,7 +68,7 @@ class OAuthAuthorityClient:
 
 		if auth_method is None:
 			raise OAuthAuthorityError(
-				f'None of the requested auth method is supported: {", ".join(auth_methods)} '
+				f'None of the requested specified auth methods are supported: {", ".join(auth_methods)} '
 				f'Supported methods are {", ".join(auth_methods_supported)}'
 			)
 
@@ -98,10 +98,7 @@ class OAuthAuthorityClient:
 
 	def load_openid_config(self) -> OpenIDConfiguration:
 		response = self.http.get("/.well-known/openid-configuration")
-
-		if response.status_code == 404:
-			raise OAuthAuthorityError(f"OpenID configuration not found at {response.url}")
-
+		response.raise_for_status()
 		return response.json()
 
 	@property

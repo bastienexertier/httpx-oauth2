@@ -10,7 +10,7 @@ class ClientCredentials:
 	def __init__(
 		self,
 		client_id: str,
-		client_secret: str,
+		client_secret: Optional[str],
 		scopes: Scopes = Scopes(),
 		auth_methods: AuthMethods = DefaultAuthMethods,
 	) -> None:
@@ -18,7 +18,6 @@ class ClientCredentials:
 		self.client_secret = client_secret
 		self.scopes = scopes
 		self.auth_methods = auth_methods
-		self._hash = self.key().__hash__()
 
 	def __str__(self) -> str:
 		return f'ClientCredentials(client_id={self.client_id}, scopes={self.scopes})'
@@ -95,7 +94,6 @@ class ResourceOwnerCredentialsWithUser:
 		self.client_secret = client_secret
 		self.scopes = scopes
 		self.auth_methods = auth_methods
-		self._hash = self.key().__hash__()
 
 	def __str__(self) -> str:
 		return f'ResourceOwnerCredentialsWithUser(client_id={self.client_id}, scopes={self.scopes})'
@@ -139,7 +137,6 @@ class TokenExchangeCredentials:
 		self.client_secret = client_secret
 		self.scopes = scopes
 		self.auth_methods = auth_methods
-		self._hash = self.key().__hash__()
 
 	def __str__(self) -> str:
 		return f'TokenExchangeCredentials(client_id={self.client_id}, scopes={self.scopes})'
@@ -166,6 +163,14 @@ class TokenExchangeCredentials:
 			auth_methods=self.auth_methods,
 		)
 
+	def client_credentials(self) -> Credentials:
+		return ClientCredentials(
+			client_id=self.client_id,
+			client_secret=self.client_secret,
+			scopes=self.scopes,
+			auth_methods=self.auth_methods
+		)
+
 
 class ClientCredentialsRefreshCredentials:
 	def __init__(
@@ -181,7 +186,6 @@ class ClientCredentialsRefreshCredentials:
 		self.client_secret = client_secret
 		self.scopes = scopes
 		self.auth_methods = auth_methods
-		self._hash = self.key().__hash__()
 
 	def __str__(self) -> str:
 		return f'ClientCredentialsRefreshCredentials(client_id={self.client_id}, scopes={self.scopes})'
@@ -215,7 +219,6 @@ class ResourceOwnerCredentialsRefreshCredentials:
 		self.client_secret = client_secret
 		self.scopes = scopes
 		self.auth_methods = auth_methods
-		self._hash = self.key().__hash__()
 
 	def __str__(self) -> str:
 		return f'ResourceOwnerCredentialsRefreshCredentials(client_id={self.client_id}, scopes={self.scopes})'

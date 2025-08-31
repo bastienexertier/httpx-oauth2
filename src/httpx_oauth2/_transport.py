@@ -4,13 +4,9 @@ from typing import Callable, Optional
 
 import httpx
 
-from ._interfaces import Credentials, SupportsExhange, OAuthAuthorityError, DatetimeProvider
+from ._interfaces import Credentials, SubjectTokenProvider, SupportsExchange, OAuthAuthorityError, DatetimeProvider
 from ._oauth_authority_client import OAuthAuthorityClient
-from ._model import (
-	ClientCredentials,
-	ResourceOwnerCredentials,
-	ResourceOwnerCredentialsWithUser,
-)
+from ._model import ResourceOwnerCredentials
 from ._token import OAuthToken
 from ._token_provider import TokenProvider
 
@@ -30,19 +26,24 @@ class AuthenticatingTransport(httpx.BaseTransport):
 
 		credentials = self.credentials_builder(request)
 
+		if not credentials:
+			raise OAuthAuthorityError('Failed to build credentials')
+
 		response = None
-		if credentials:
 
-			for token in self.token_provider.get_token(credentials):
+		for token in self.token_provider.get_token(credentials):
 
-				set_auth_header(request, token)
+			request = set_auth_header(request, token)
 
-				response = self.transport.handle_request(request)
+			response = self.transport.handle_request(request)
 
-				if response.status_code != 401:
-					return response
+			if response.status_code != 401:
+				return response
 
-		return response or self.transport.handle_request(request)
+		if response is not None:
+			return response
+
+		raise OAuthAuthorityError('Failed to get token')
 
 
 class AuthenticatingTransportFactory:
@@ -54,22 +55,10 @@ class AuthenticatingTransportFactory:
 		self.authority = authority
 		self.now = datetime_provider or datetime.datetime.now
 
-	def client_credentials_transport(
-		self, transport: httpx.BaseTransport, credentials: ClientCredentials
+	def auhtenticated_transport(
+		self, transport: httpx.BaseTransport, credentials: Credentials
 	) -> httpx.BaseTransport:
-		"""Authenticate calls with client_credential grant"""
-		return AuthenticatingTransport(
-			transport,
-			lambda req: build_credentials(req, credentials),
-			TokenProvider(self.authority, self.now),
-		)
-
-	def technical_account_transport(
-		self,
-		transport: httpx.BaseTransport,
-		credentials: ResourceOwnerCredentialsWithUser,
-	) -> httpx.BaseTransport:
-		"""Authenticate calls with password grant, where the username/password is unique and set in credentials"""
+		"""Authenticate calls with client_credential or password grant"""
 		return AuthenticatingTransport(
 			transport,
 			lambda req: build_credentials(req, credentials),
@@ -87,18 +76,27 @@ class AuthenticatingTransportFactory:
 		)
 
 	def token_exchange_transport(
-		self, transport: httpx.BaseTransport, credentials: SupportsExhange
+		self,
+		transport: httpx.BaseTransport,
+		credentials: SupportsExchange,
+		subject_token_provider: SubjectTokenProvider,
+		default_to_client_credentials: bool,
 	) -> httpx.BaseTransport:
-		"""Authenticate calls with token-exhange grant, where the subject token is taken from the Authorization header"""
+		"""Authenticate calls with token-exhange grant, where the subject token given by the subject_token_provider"""
 		return AuthenticatingTransport(
 			transport,
-			lambda req: build_exchange_credentials(req, credentials),
+			lambda req: build_exchange_credentials(
+				req,
+				credentials,
+				subject_token_provider,
+				default_to_client_credentials
+			),
 			TokenProvider(self.authority, self.now),
 		)
 
-
-def set_auth_header(request: httpx.Request, token: OAuthToken):
+def set_auth_header(request: httpx.Request, token: OAuthToken) -> httpx.Request:
 	request.headers["Authorization"] = token.to_bearer_string()
+	return request
 
 
 def build_credentials(
@@ -110,6 +108,7 @@ def build_credentials(
 def add_username_password(
 	request: httpx.Request, credentials: ResourceOwnerCredentials
 ) -> Optional[Credentials]:
+
 	auth_header = request.headers.get("Authorization")
 	if not auth_header:
 		return None
@@ -122,11 +121,18 @@ def add_username_password(
 
 
 def build_exchange_credentials(
-	request: httpx.Request, credentials: SupportsExhange
+	request: httpx.Request,
+	credentials: SupportsExchange,
+	subject_token_provider: SubjectTokenProvider,
+	default_to_client_credentials: bool
 ) -> Optional[Credentials]:
-	auth_header: str = request.headers.get("Authorization")
 
-	if not auth_header:
-		raise OAuthAuthorityError("Token to be exchanged not found in Authorization header")
+	subject_token = subject_token_provider()
 
-	return credentials.exchange(auth_header.removeprefix("Bearer "))
+	if subject_token:
+		return credentials.exchange(subject_token)
+
+	if default_to_client_credentials:
+		return credentials
+
+	raise OAuthAuthorityError('Failed to acquire subject token')
