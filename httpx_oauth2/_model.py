@@ -22,6 +22,16 @@ class ClientCredentials:
 	def __str__(self) -> str:
 		return f"ClientCredentials(client_id={self.client_id}, scopes={self.scopes})"
 
+	def __hash__(self) -> int:
+		return (self.client_id, self.scopes).__hash__()
+
+	def __eq__(self, other: object) -> bool:
+		if not isinstance(
+			other, (ClientCredentials, ClientCredentialsRefreshCredentials)
+		):
+			return False
+		return self.client_id == other.client_id and self.scopes == other.scopes
+
 	@property
 	def grant_type(self) -> GrantType:
 		return "client_credentials"
@@ -40,11 +50,11 @@ class ClientCredentials:
 
 	def refresh(self, refresh_token: str) -> Credentials:
 		return ClientCredentialsRefreshCredentials(
-			refresh_token=refresh_token,
 			client_id=self.client_id,
 			client_secret=self.client_secret,
 			scopes=self.scopes,
 			auth_methods=self.auth_methods,
+			refresh_token=refresh_token,
 		)
 
 
@@ -95,6 +105,24 @@ class ResourceOwnerCredentialsWithUser:
 	def __str__(self) -> str:
 		return f"ResourceOwnerCredentialsWithUser(client_id={self.client_id}, scopes={self.scopes})"
 
+	def __hash__(self) -> int:
+		return (self.client_id, self.username, self.scopes).__hash__()
+
+	def __eq__(self, other: object) -> bool:
+		if not isinstance(
+			other,
+			(
+				ResourceOwnerCredentialsWithUser,
+				ResourceOwnerCredentialsRefreshCredentials,
+			),
+		):
+			return False
+		return (
+			self.client_id == other.client_id
+			and self.username == other.username
+			and self.scopes == other.scopes
+		)
+
 	@property
 	def grant_type(self) -> GrantType:
 		return "password"
@@ -134,6 +162,18 @@ class TokenExchangeCredentials:
 
 	def __str__(self) -> str:
 		return f"TokenExchangeCredentials(client_id={self.client_id}, scopes={self.scopes})"
+
+	def __hash__(self) -> int:
+		return (self.client_id, self.subject_token, self.scopes).__hash__()
+
+	def __eq__(self, other: object) -> bool:
+		if not isinstance(other, (TokenExchangeCredentials,)):
+			return False
+		return (
+			self.client_id == other.client_id
+			and self.subject_token == other.subject_token
+			and self.scopes == other.scopes
+		)
 
 	@property
 	def grant_type(self) -> GrantType:
@@ -181,6 +221,16 @@ class ClientCredentialsRefreshCredentials:
 	def __str__(self) -> str:
 		return f"ClientCredentialsRefreshCredentials(client_id={self.client_id}, scopes={self.scopes})"
 
+	def __hash__(self) -> int:
+		return (self.client_id, self.scopes).__hash__()
+
+	def __eq__(self, other: object) -> bool:
+		if not isinstance(
+			other, (ClientCredentials, ClientCredentialsRefreshCredentials)
+		):
+			return False
+		return self.client_id == other.client_id and self.scopes == other.scopes
+
 	@property
 	def grant_type(self) -> GrantType:
 		return "refresh_token"
@@ -210,6 +260,24 @@ class ResourceOwnerCredentialsRefreshCredentials:
 
 	def __str__(self) -> str:
 		return f"ResourceOwnerCredentialsRefreshCredentials(client_id={self.client_id}, scopes={self.scopes})"
+
+	def __hash__(self) -> int:
+		return (self.client_id, self.username, self.scopes).__hash__()
+
+	def __eq__(self, other: object) -> bool:
+		if not isinstance(
+			other,
+			(
+				ResourceOwnerCredentialsWithUser,
+				ResourceOwnerCredentialsRefreshCredentials,
+			),
+		):
+			return False
+		return (
+			self.client_id == other.client_id
+			and self.username == other.username
+			and self.scopes == other.scopes
+		)
 
 	@property
 	def grant_type(self) -> GrantType:

@@ -1,10 +1,10 @@
 [project]
 name = "httpx-oauth2"
-version = "1.0.4"
+version = "1.0.5"
 description = "Add your description here"
 readme = "README.md"
 authors = [
-    { name = "exertieb", email = "bastien.exertier@grenoble-inp.org" }
+    { name = "Bastien Exertier", email = "exertier.bastien@gmail.com" }
 ]
 requires-python = ">=3.10"
 dependencies = [
