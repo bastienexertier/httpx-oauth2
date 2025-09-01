@@ -29,9 +29,11 @@ class AuthenticatingTransport(httpx.BaseTransport):
 		if not credentials:
 			raise OAuthAuthorityError('Failed to build credentials')
 
-		response = None
+		response: Optional[httpx.Response] = None
 
-		for token in self.token_provider.get_token(credentials):
+		for _ in range(3):
+
+			token = self.token_provider.get_token(credentials)
 
 			request = set_auth_header(request, token)
 
@@ -52,17 +54,16 @@ class AuthenticatingTransportFactory:
 		authority: OAuthAuthorityClient,
 		datetime_provider: Optional[DatetimeProvider] = None,
 	):
-		self.authority = authority
-		self.now = datetime_provider or datetime.datetime.now
+		self.token_provider = TokenProvider(authority, datetime_provider or datetime.datetime.now)
 
-	def auhtenticated_transport(
+	def auhtenticating_transport(
 		self, transport: httpx.BaseTransport, credentials: Credentials
 	) -> httpx.BaseTransport:
 		"""Authenticate calls with client_credential or password grant"""
 		return AuthenticatingTransport(
 			transport,
 			lambda req: build_credentials(req, credentials),
-			TokenProvider(self.authority, self.now),
+			self.token_provider,
 		)
 
 	def resource_owner_transport(
@@ -72,7 +73,7 @@ class AuthenticatingTransportFactory:
 		return AuthenticatingTransport(
 			transport,
 			lambda req: add_username_password(req, credentials),
-			TokenProvider(self.authority, self.now),
+			self.token_provider,
 		)
 
 	def token_exchange_transport(
@@ -80,18 +81,23 @@ class AuthenticatingTransportFactory:
 		transport: httpx.BaseTransport,
 		credentials: SupportsExchange,
 		subject_token_provider: SubjectTokenProvider,
-		default_to_client_credentials: bool,
+		optional_exchange: bool=False,
 	) -> httpx.BaseTransport:
-		"""Authenticate calls with token-exhange grant, where the subject token given by the subject_token_provider"""
+		"""
+		Authenticate calls with token-exhange grant.
+		The subject token is given by the subject_token_provider.
+		If optional_exchange is True and no subject_token is return, will try requesting the resource without exchange.
+		(ie with client credentials or password)
+		"""
 		return AuthenticatingTransport(
 			transport,
 			lambda req: build_exchange_credentials(
 				req,
 				credentials,
 				subject_token_provider,
-				default_to_client_credentials
+				optional_exchange
 			),
-			TokenProvider(self.authority, self.now),
+			self.token_provider,
 		)
 
 def set_auth_header(request: httpx.Request, token: OAuthToken) -> httpx.Request:
@@ -124,7 +130,7 @@ def build_exchange_credentials(
 	request: httpx.Request,
 	credentials: SupportsExchange,
 	subject_token_provider: SubjectTokenProvider,
-	default_to_client_credentials: bool
+	optional_exchange: bool
 ) -> Optional[Credentials]:
 
 	subject_token = subject_token_provider()
@@ -132,7 +138,7 @@ def build_exchange_credentials(
 	if subject_token:
 		return credentials.exchange(subject_token)
 
-	if default_to_client_credentials:
+	if optional_exchange:
 		return credentials
 
 	raise OAuthAuthorityError('Failed to acquire subject token')

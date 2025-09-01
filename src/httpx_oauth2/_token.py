@@ -1,5 +1,5 @@
+
 import datetime
-from typing import Optional
 from dataclasses import dataclass
 
 Scopes = tuple[str, ...]
@@ -14,7 +14,7 @@ class OAuthToken:
 	access_token: str
 	expires_in: datetime.timedelta
 
-	refresh_token: Optional[str]
+	refresh_token: str|None
 	refresh_token_expires_in: datetime.timedelta
 
 	scopes: Scopes

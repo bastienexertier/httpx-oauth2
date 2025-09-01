@@ -1,12 +1,10 @@
 import datetime
 from dataclasses import dataclass
-from typing import Iterator, Optional
-
-from cachelib.simple import SimpleCache
+from threading import Event, Lock
+from typing import Optional
 
 from ._oauth_authority_client import OAuthAuthorityClient
-from ._interfaces import DatetimeProvider, SupportsRefresh
-from ._model import Credentials, TokenExchangeCredentials
+from ._interfaces import Credentials, DatetimeProvider, SupportsRefresh
 from ._token import OAuthToken
 
 
@@ -16,8 +14,6 @@ class TokenProviderOptions:
 
 
 class TokenProvider:
-
-	token_cache = SimpleCache(threshold=100)
 
 	def __init__(
 		self,
@@ -32,15 +28,66 @@ class TokenProvider:
 			+ self.options.token_expire_delta
 		)
 
-	def get_token(self, credentials: Credentials) -> Iterator[OAuthToken]:
+		self.sync_token_providers: dict[Credentials, SyncTokenProvider] = {}
 
-		key = credentials.key()
+	def get_token(self, credentials: Credentials) -> OAuthToken:
 
-		token: Optional[OAuthToken] = self.token_cache.get(key)
+		if not (provider := self.sync_token_providers.get(credentials)):
+			provider = SyncTokenProvider(self.authority, self.now)
+			self.sync_token_providers[credentials] = provider
+
+		return provider.get_token(credentials)
+
+
+class SyncTokenProvider:
+
+	def __init__(
+		self,
+		authority: OAuthAuthorityClient,
+		datetime_provider: DatetimeProvider,
+	) -> None:
+		self.authority = authority
+		self.now = datetime_provider
+
+		self.lock = Lock()
+		self.event = Event()
+
+		self.value: OAuthToken|None = None
+
+	def get_token(self, credentials: Credentials) -> OAuthToken:
+
+		while True:
+
+			token = self.value
+
+			if token:
+				if not token.has_expired(self.now()):
+					break
+
+				self.event.clear()
+
+			acquired = self.lock.acquire(blocking=False)
+
+			if not acquired:
+				_ = self.event.wait()
+				continue
+
+			try:
+				if not self.event.is_set():
+					token = self.fetch_token(credentials, token)
+					self.value = token
+					self.event.set()
+			finally:
+				self.lock.release()
+
+		return token
+
+	def fetch_token(self, credentials: Credentials, token: OAuthToken|None) -> OAuthToken:
 
 		if token:
+
 			if not token.has_expired(self.now()):
-				yield token
+				return token
 
 			if (
 				self.authority.supports_grant("refresh_token")
@@ -48,17 +95,8 @@ class TokenProvider:
 				and token.refresh_token
 				and not token.refresh_token_has_expired(self.now())
 			):
-				token = self.authority.get_token(
+				return self.authority.get_token(
 					credentials.refresh(token.refresh_token)
 				)
 
-				self.token_cache.set(
-					key, token, timeout=token.expiration(self.now()).seconds
-				)
-				yield token
-
-		token = self.authority.get_token(credentials)
-
-		self.token_cache.set(key, token, timeout=token.expiration(self.now()).seconds)
-		yield token
-		self.token_cache.delete(key)
+		return self.authority.get_token(credentials)
