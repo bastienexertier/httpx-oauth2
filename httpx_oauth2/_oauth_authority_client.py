@@ -1,3 +1,4 @@
+
 import datetime
 from typing import TypedDict, Optional, Callable
 
@@ -25,10 +26,12 @@ class OAuthAuthorityClient:
 		self,
 		http: httpx.Client,
 		openid_config: Optional[OpenIDConfiguration] = None,
+		openid_config_url: str = '/.well-known/openid-configuration',
 		datetime_provider: Optional[DatetimeProvider] = None,
 	):
 		self.http = http
 		self.now = datetime_provider or datetime.datetime.now
+		self.openid_config_url = openid_config_url
 		self.__openid_config = openid_config
 
 		self.__builders: dict[str, RequestBuilder] = {
@@ -96,15 +99,15 @@ class OAuthAuthorityClient:
 
 		return OAuthToken.from_dict(data, emitted_at=self.now() - response.elapsed)
 
-	def load_openid_config(self) -> OpenIDConfiguration:
-		response = self.http.get("/.well-known/openid-configuration")
+	def __load_openid_config(self) -> OpenIDConfiguration:
+		response = self.http.get(self.openid_config_url)
 		response.raise_for_status()
 		return response.json()
 
 	@property
 	def openid_config(self) -> OpenIDConfiguration:
 		if not self.__openid_config:
-			self.__openid_config = self.load_openid_config()
+			self.__openid_config = self.__load_openid_config()
 		return self.__openid_config
 
 	@staticmethod

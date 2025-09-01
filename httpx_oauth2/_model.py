@@ -1,3 +1,4 @@
+
 from typing import Optional
 
 from ._interfaces import Credentials, GrantType, AuthMethods
@@ -28,9 +29,6 @@ class ClientCredentials:
 
 	def to_request_body(self) -> dict[str, str]:
 		return {}
-
-	def key(self) -> str:
-		return f"{self.client_id}:{self.scopes}"
 
 	def exchange(self, subject_token: str) -> Credentials:
 		return TokenExchangeCredentials(
@@ -108,9 +106,6 @@ class ResourceOwnerCredentialsWithUser:
 			"password": self.password,
 		}
 
-	def key(self) -> str:
-		return f"{self.client_id}:{self.username}:{self.scopes}"
-
 	def refresh(self, refresh_token: str) -> Credentials:
 		return ResourceOwnerCredentialsRefreshCredentials(
 			refresh_token=refresh_token,
@@ -150,9 +145,6 @@ class TokenExchangeCredentials:
 			"subject_token": self.subject_token,
 			"subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
 		}
-
-	def key(self) -> str:
-		return f"{self.client_id}:{self.subject_token}:{self.scopes}"
 
 	def refresh(self, refresh_token: str) -> Credentials:
 		return ClientCredentialsRefreshCredentials(
@@ -197,9 +189,6 @@ class ClientCredentialsRefreshCredentials:
 	def to_request_body(self) -> dict[str, str]:
 		return {"refresh_token": self.refresh_token}
 
-	def key(self) -> str:
-		return f"{self.client_id}:{self.scopes}"
-
 
 class ResourceOwnerCredentialsRefreshCredentials:
 	def __init__(
@@ -229,6 +218,3 @@ class ResourceOwnerCredentialsRefreshCredentials:
 
 	def to_request_body(self) -> dict[str, str]:
 		return {"refresh_token": self.refresh_token}
-
-	def key(self) -> str:
-		return f"{self.client_id}:{self.username}:{self.scopes}"

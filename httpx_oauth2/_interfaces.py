@@ -57,9 +57,6 @@ class Credentials(Protocol):
 	def to_request_body(self) -> dict[str, str]:
 		...
 
-	def key(self) -> str:
-		...
-
 
 class SupportsExchange(Credentials, Protocol):
 	def exchange(self, subject_token: str) -> Credentials:

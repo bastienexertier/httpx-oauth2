@@ -1,3 +1,4 @@
+
 import datetime
 import base64
 from typing import Callable, Optional
@@ -92,7 +93,6 @@ class AuthenticatingTransportFactory:
 		return AuthenticatingTransport(
 			transport,
 			lambda req: build_exchange_credentials(
-				req,
 				credentials,
 				subject_token_provider,
 				optional_exchange
@@ -127,7 +127,6 @@ def add_username_password(
 
 
 def build_exchange_credentials(
-	request: httpx.Request,
 	credentials: SupportsExchange,
 	subject_token_provider: SubjectTokenProvider,
 	optional_exchange: bool
