@@ -1,4 +1,3 @@
-
 from typing import Optional
 
 from ._interfaces import Credentials, GrantType, AuthMethods
@@ -21,7 +20,7 @@ class ClientCredentials:
 		self.auth_methods = auth_methods
 
 	def __str__(self) -> str:
-		return f'ClientCredentials(client_id={self.client_id}, scopes={self.scopes})'
+		return f"ClientCredentials(client_id={self.client_id}, scopes={self.scopes})"
 
 	@property
 	def grant_type(self) -> GrantType:
@@ -63,7 +62,7 @@ class ResourceOwnerCredentials:
 		self.auth_methods = auth_methods
 
 	def __str__(self) -> str:
-		return f'ResourceOwnerCredentials(client_id={self.client_id}, scopes={self.scopes})'
+		return f"ResourceOwnerCredentials(client_id={self.client_id}, scopes={self.scopes})"
 
 	def with_username_password(self, username: str, password: str):
 		return ResourceOwnerCredentialsWithUser(
@@ -94,7 +93,7 @@ class ResourceOwnerCredentialsWithUser:
 		self.auth_methods = auth_methods
 
 	def __str__(self) -> str:
-		return f'ResourceOwnerCredentialsWithUser(client_id={self.client_id}, scopes={self.scopes})'
+		return f"ResourceOwnerCredentialsWithUser(client_id={self.client_id}, scopes={self.scopes})"
 
 	@property
 	def grant_type(self) -> GrantType:
@@ -134,7 +133,7 @@ class TokenExchangeCredentials:
 		self.auth_methods = auth_methods
 
 	def __str__(self) -> str:
-		return f'TokenExchangeCredentials(client_id={self.client_id}, scopes={self.scopes})'
+		return f"TokenExchangeCredentials(client_id={self.client_id}, scopes={self.scopes})"
 
 	@property
 	def grant_type(self) -> GrantType:
@@ -160,7 +159,7 @@ class TokenExchangeCredentials:
 			client_id=self.client_id,
 			client_secret=self.client_secret,
 			scopes=self.scopes,
-			auth_methods=self.auth_methods
+			auth_methods=self.auth_methods,
 		)
 
 
@@ -168,7 +167,7 @@ class ClientCredentialsRefreshCredentials:
 	def __init__(
 		self,
 		client_id: str,
-		client_secret: Optional[str]	,
+		client_secret: Optional[str],
 		refresh_token: str,
 		scopes: Scopes = Scopes(),
 		auth_methods: AuthMethods = DefaultAuthMethods,
@@ -180,7 +179,7 @@ class ClientCredentialsRefreshCredentials:
 		self.auth_methods = auth_methods
 
 	def __str__(self) -> str:
-		return f'ClientCredentialsRefreshCredentials(client_id={self.client_id}, scopes={self.scopes})'
+		return f"ClientCredentialsRefreshCredentials(client_id={self.client_id}, scopes={self.scopes})"
 
 	@property
 	def grant_type(self) -> GrantType:
@@ -210,7 +209,7 @@ class ResourceOwnerCredentialsRefreshCredentials:
 		self.auth_methods = auth_methods
 
 	def __str__(self) -> str:
-		return f'ResourceOwnerCredentialsRefreshCredentials(client_id={self.client_id}, scopes={self.scopes})'
+		return f"ResourceOwnerCredentialsRefreshCredentials(client_id={self.client_id}, scopes={self.scopes})"
 
 	@property
 	def grant_type(self) -> GrantType:

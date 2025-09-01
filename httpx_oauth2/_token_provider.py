@@ -1,4 +1,3 @@
-
 import datetime
 from dataclasses import dataclass
 from threading import Event, Lock
@@ -53,7 +52,7 @@ class SyncTokenProvider:
 		self.lock = Lock()
 		self.event = Event()
 
-		self.value: OAuthToken|None = None
+		self.value: OAuthToken | None = None
 
 	def get_token(self, credentials: Credentials) -> OAuthToken:
 
@@ -83,7 +82,9 @@ class SyncTokenProvider:
 
 		return token
 
-	def fetch_token(self, credentials: Credentials, token: OAuthToken|None) -> OAuthToken:
+	def fetch_token(
+		self, credentials: Credentials, token: OAuthToken | None
+	) -> OAuthToken:
 
 		if token:
 

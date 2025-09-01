@@ -1,4 +1,3 @@
-
 import datetime
 from typing import TypedDict, Optional, Callable
 
@@ -26,7 +25,7 @@ class OAuthAuthorityClient:
 		self,
 		http: httpx.Client,
 		openid_config: Optional[OpenIDConfiguration] = None,
-		openid_config_url: str = '/.well-known/openid-configuration',
+		openid_config_url: str = "/.well-known/openid-configuration",
 		datetime_provider: Optional[DatetimeProvider] = None,
 	):
 		self.http = http
@@ -139,8 +138,8 @@ class OAuthAuthorityClient:
 			algorithm="HS256",
 		)
 
-		data[
-			"client_assertion_type"
-		] = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+		data["client_assertion_type"] = (
+			"urn:ietf:params:oauth:client-assertion-type:jwt-bearer"
+		)
 		data["client_assertion"] = client_assertion
 		return None, data

@@ -1,11 +1,16 @@
-
 import datetime
 import base64
 from typing import Callable, Optional
 
 import httpx
 
-from ._interfaces import Credentials, SubjectTokenProvider, SupportsExchange, OAuthAuthorityError, DatetimeProvider
+from ._interfaces import (
+	Credentials,
+	SubjectTokenProvider,
+	SupportsExchange,
+	OAuthAuthorityError,
+	DatetimeProvider,
+)
 from ._oauth_authority_client import OAuthAuthorityClient
 from ._model import ResourceOwnerCredentials
 from ._token import OAuthToken
@@ -28,7 +33,7 @@ class AuthenticatingTransport(httpx.BaseTransport):
 		credentials = self.credentials_builder(request)
 
 		if not credentials:
-			raise OAuthAuthorityError('Failed to build credentials')
+			raise OAuthAuthorityError("Failed to build credentials")
 
 		response: Optional[httpx.Response] = None
 
@@ -46,7 +51,7 @@ class AuthenticatingTransport(httpx.BaseTransport):
 		if response is not None:
 			return response
 
-		raise OAuthAuthorityError('Failed to get token')
+		raise OAuthAuthorityError("Failed to get token")
 
 
 class AuthenticatingTransportFactory:
@@ -55,7 +60,9 @@ class AuthenticatingTransportFactory:
 		authority: OAuthAuthorityClient,
 		datetime_provider: Optional[DatetimeProvider] = None,
 	):
-		self.token_provider = TokenProvider(authority, datetime_provider or datetime.datetime.now)
+		self.token_provider = TokenProvider(
+			authority, datetime_provider or datetime.datetime.now
+		)
 
 	def auhtenticating_transport(
 		self, transport: httpx.BaseTransport, credentials: Credentials
@@ -82,7 +89,7 @@ class AuthenticatingTransportFactory:
 		transport: httpx.BaseTransport,
 		credentials: SupportsExchange,
 		subject_token_provider: SubjectTokenProvider,
-		optional_exchange: bool=False,
+		optional_exchange: bool = False,
 	) -> httpx.BaseTransport:
 		"""
 		Authenticate calls with token-exhange grant.
@@ -93,12 +100,11 @@ class AuthenticatingTransportFactory:
 		return AuthenticatingTransport(
 			transport,
 			lambda req: build_exchange_credentials(
-				credentials,
-				subject_token_provider,
-				optional_exchange
+				credentials, subject_token_provider, optional_exchange
 			),
 			self.token_provider,
 		)
+
 
 def set_auth_header(request: httpx.Request, token: OAuthToken) -> httpx.Request:
 	request.headers["Authorization"] = token.to_bearer_string()
@@ -129,7 +135,7 @@ def add_username_password(
 def build_exchange_credentials(
 	credentials: SupportsExchange,
 	subject_token_provider: SubjectTokenProvider,
-	optional_exchange: bool
+	optional_exchange: bool,
 ) -> Optional[Credentials]:
 
 	subject_token = subject_token_provider()
@@ -140,4 +146,4 @@ def build_exchange_credentials(
 	if optional_exchange:
 		return credentials
 
-	raise OAuthAuthorityError('Failed to acquire subject token')
+	raise OAuthAuthorityError("Failed to acquire subject token")

@@ -1,4 +1,3 @@
-
 import datetime
 from typing import Optional, Literal, Callable, Protocol, runtime_checkable
 
@@ -26,8 +25,7 @@ AuthMethod = Literal[
 AuthMethods = tuple[AuthMethod, ...]
 
 
-class OAuthAuthorityError(Exception):
-	...
+class OAuthAuthorityError(Exception): ...
 
 
 DatetimeProvider = Callable[[], datetime.datetime]
@@ -39,31 +37,24 @@ class Credentials(Protocol):
 	auth_methods: AuthMethods
 
 	@property
-	def grant_type(self) -> GrantType:
-		...
+	def grant_type(self) -> GrantType: ...
 
 	@property
-	def client_id(self) -> str:
-		...
+	def client_id(self) -> str: ...
 
 	@property
-	def client_secret(self) -> Optional[str]:
-		...
+	def client_secret(self) -> Optional[str]: ...
 
 	@property
-	def scopes(self) -> Scopes:
-		...
+	def scopes(self) -> Scopes: ...
 
-	def to_request_body(self) -> dict[str, str]:
-		...
+	def to_request_body(self) -> dict[str, str]: ...
 
 
 class SupportsExchange(Credentials, Protocol):
-	def exchange(self, subject_token: str) -> Credentials:
-		...
+	def exchange(self, subject_token: str) -> Credentials: ...
 
 
 @runtime_checkable
 class SupportsRefresh(Credentials, Protocol):
-	def refresh(self, refresh_token: str) -> Credentials:
-		...
+	def refresh(self, refresh_token: str) -> Credentials: ...

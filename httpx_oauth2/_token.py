@@ -1,4 +1,3 @@
-
 import datetime
 from dataclasses import dataclass
 
@@ -14,7 +13,7 @@ class OAuthToken:
 	access_token: str
 	expires_in: datetime.timedelta
 
-	refresh_token: str|None
+	refresh_token: str | None
 	refresh_token_expires_in: datetime.timedelta
 
 	scopes: Scopes
