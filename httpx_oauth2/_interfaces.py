@@ -27,6 +27,13 @@ AuthMethods = tuple[AuthMethod, ...]
 
 class OAuthAuthorityError(Exception): ...
 
+class OAuthAuthorityRemoteError(OAuthAuthorityError):
+	def __init__(self, status_code: str, error: str, error_description: Optional[str]) -> None:
+		super().__init__(f"[{status_code}] {error} : {error_description}",)
+		self.status_code = status_code
+		self.error = error
+		self.error_description = error_description
+
 
 DatetimeProvider = Callable[[], datetime.datetime]
 SubjectTokenProvider = Callable[[], Optional[str]]

@@ -64,7 +64,7 @@ class AuthenticatingTransportFactory:
 			authority, datetime_provider or datetime.datetime.now
 		)
 
-	def auhtenticating_transport(
+	def authenticating_transport(
 		self, transport: httpx.BaseTransport, credentials: Credentials
 	) -> httpx.BaseTransport:
 		"""Authenticate calls with client_credential or password grant"""

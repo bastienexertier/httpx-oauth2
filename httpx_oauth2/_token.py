@@ -38,6 +38,7 @@ class OAuthToken:
 
 	@classmethod
 	def from_dict(cls, data: dict[str, str], *, emitted_at: datetime.datetime):
+		scope = data.get("scope")
 		return cls(
 			token_type=data["token_type"],
 			emitted_at=emitted_at,
@@ -47,5 +48,5 @@ class OAuthToken:
 			refresh_token_expires_in=datetime.timedelta(
 				seconds=int(data.get("refresh_expires_in", 0))
 			),
-			scopes=Scopes(data["scope"].split(" ")),
+			scopes=Scopes(scope.split(" ")) if scope else Scopes(),
 		)
