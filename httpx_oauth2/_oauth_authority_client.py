@@ -1,9 +1,16 @@
 import datetime
+import json
 from typing import TypedDict, Optional, Callable
 
 import httpx
 
-from ._interfaces import AuthMethod, DatetimeProvider, OAuthAuthorityError, OAuthAuthorityRemoteError, Credentials
+from ._interfaces import (
+	AuthMethod,
+	DatetimeProvider,
+	OAuthAuthorityError,
+	OAuthAuthorityRemoteError,
+	Credentials,
+)
 from ._token import OAuthToken
 from ._model import GrantType
 
@@ -92,14 +99,15 @@ class OAuthAuthorityClient:
 		try:
 			data = response.json()
 		except json.JSONDecodeError:
-			raise OAuthAuthorityError(f'Failed to deserialize response to json: ' + response.text)
+			raise OAuthAuthorityError(
+				f"Failed to deserialize response to json: " + response.text
+			)
 
 		if response.is_error:
 			raise OAuthAuthorityRemoteError(
 				response.status_code,
-				data['error'],
-				data.get('error_description'),
-
+				data["error"],
+				data.get("error_description"),
 			)
 
 		return OAuthToken.from_dict(data, emitted_at=self.now() - response.elapsed)
