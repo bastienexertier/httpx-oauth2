@@ -8,7 +8,7 @@ My implementation of an `httpx.BaseTransport` that negotiates an access token an
 
 # Usage
 
-The library only needs to be setup. Once it is done, the authentication will happen behind the usage of `httpx.Client`, meaning you shouldn't need to change existing code.
+The library only needs to be setup. Once it is done, the authentication will happen behind the usage of `httpx.Client`, meaning **you shouldn't need to change existing httpx code**.
 
 ## Imports
 
@@ -38,7 +38,7 @@ transports = AuthenticatingTransportFactory(oauth_authority)
 
 credentials = ClientCredentials('client-1', 'my-secret', ('scope-1',))
 
-api_client._transport = transports.client_credentials_transport(api_client._transport, credentials)
+api_client._transport = transports.authenticating_transport(api_client._transport, credentials)
 
 # ===== JUST THIS. NOW USE A USUAL =====
 
@@ -62,7 +62,7 @@ transports = AuthenticatingTransportFactory(oauth_authority)
 
 credentials = ResourceOwnerCredentials('client-3', 'my-secret').with_username_password('user', 'pwd')
 
-api_client._transport = transports.technical_account_transport(api_client._transport, credentials)
+api_client._transport = transports.authenticating_transport(api_client._transport, credentials)
 
 # ===== JUST THIS. NOW USE A USUAL =====
 
@@ -86,13 +86,15 @@ transports = AuthenticatingTransportFactory(oauth_authority)
 
 credentials = ClientCredentials('client-1', 'my-secret', ('scope-1',))
 
-api_client._transport = transports.token_exchange_transport(api_client._transport, credentials)
+api_client._transport = transports.token_exchange_transport(
+	api_client._transport,
+	credentials,
+	lambda: flask.request.headers['Authorization'].removeprefix('Bearer ') # A callable that returns the token to be exchanged
+)
 
 # ===== JUST THIS. NOW USE A USUAL =====
 
-# * Put the token to be exchanged in the authorization headers
-
-api_client.get('/users', headers={'Authorization': 'token_to_be_exchanged'})
+api_client.get('/users')
 
 ```
 
@@ -118,6 +120,9 @@ If the `AuthenticatingTransport` see that the response is 401 (meaning the token
 - Request a new token.
 - Re-send the request.
 
+## Multithreading
+
+The Token negotiation is behind a thread synchronization mechanism, meaning if multiple threads need a token at the same time, only one token will be negotiated with the authority and shared across all threads.
 
 ## But '\_' means its protected?
 
